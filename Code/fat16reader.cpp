@@ -99,6 +99,7 @@ int main()
 
         if (root_directory.file_attributes == 0x20 && root_directory.low_16_bits_fc > 0x00)
         {
+            
         }
         count += 32;
         fseek(fp, root_start_bytes + count, SEEK_SET);
