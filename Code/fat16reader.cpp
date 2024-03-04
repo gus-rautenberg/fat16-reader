@@ -94,6 +94,7 @@ int main()
             root_directory.file_attributes == 0x20 ? printf("<-- FILE\n") : printf("<-- DIRECTORY\n");
             printf("First Cluster: %04X \n", root_directory.low_16_bits_fc);
             printf("Size %u\n", root_directory.file_size);
+
             if (root_directory.file_attributes == 0x20 && root_directory.low_16_bits_fc > 0x00)
             {
                 int fat_start = boot_record.bytes_per_sector * boot_record.reserved_sector_count;
@@ -102,13 +103,14 @@ int main()
                 clustersFat.push_back(root_directory.low_16_bits_fc);
                 fseek(fp, firstClusterStart, SEEK_SET);
                 unsigned short nextCluster = 0;
-                int teste = 0;
+              
                 while(fread(&nextCluster, sizeof(nextCluster), 1, fp) == 1 && nextCluster != 0xFFFF && nextCluster != 0){
                     clustersFat.push_back(nextCluster);
                     fseek(fp, (fat_start + (nextCluster)*2), SEEK_SET);
                     printf("proximo cluster %d\n", nextCluster);
-                    teste++;
+                    
                 }
+                
                 printf("------------------- File Content --------------------\n");
                 for(int j = 0; j < clustersFat.size(); j++ ){
                     fseek(fp, ((clustersFat[j]-2)+dataStart) * boot_record.bytes_per_sector, SEEK_SET);
