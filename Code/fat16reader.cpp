@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <vector>
+
 // gcc -O2 fat16reader.cpp -o main
 #pragma pack(push, 1)
 
@@ -55,6 +57,7 @@ int main()
 
     int root_begin = boot_record.reserved_sector_count + (boot_record.table_size_16 * boot_record.table_count);
     int root_start_bytes = root_begin * boot_record.bytes_per_sector;
+    
 
     printf("Bytes per sector %hd \n", boot_record.bytes_per_sector);
     printf("Sector per cluster %x \n", boot_record.sectors_per_cluster);
@@ -80,27 +83,50 @@ int main()
     // printf("Size %u\n", root_directory.file_size);
     fseek(fp, root_start_bytes, SEEK_SET);
     fread(&root_directory, sizeof(fat_RD), 1, fp);
+    int root_dir_sector = ((boot_record.root_entry_count*32) + (boot_record.bytes_per_sector-1)) / boot_record.bytes_per_sector;
+    int dataStart = (root_begin + root_dir_sector);
 
-    // printf("Root Dir Sector Start %d \n", root_begin);
 
     int count = 0;
 
     for (int i = 0; i < boot_record.root_entry_count; i++)
     {
-        if (!(root_directory.file_attributes == 0x0F) && !(root_directory.file_attributes == 0))
+        if (!(root_directory.file_attributes == 0x0F) && !(root_directory.file_attributes == 0) && !(root_directory.file_name[0] == 0xE5))
         {
+            printf("------------------- Archive --------------------\n");
             printf("Name %s \n", root_directory.file_name);
             printf("atributes: %02X ", root_directory.file_attributes);
             root_directory.file_attributes == 0x20 ? printf("<-- FILE\n") : printf("<-- DIRECTORY\n");
             printf("First Cluster: %04X \n", root_directory.low_16_bits_fc);
             printf("Size %u\n", root_directory.file_size);
+            if (root_directory.file_attributes == 0x20 && root_directory.low_16_bits_fc > 0x00)
+            {
+                int fat_start = boot_record.bytes_per_sector * boot_record.reserved_sector_count;
+                int firstClusterStart = fat_start + (root_directory.low_16_bits_fc)*2;
+                std::vector<int> clustersFat;
+                clustersFat.push_back(root_directory.low_16_bits_fc);
+                fseek(fp, firstClusterStart, SEEK_SET);
+                unsigned short nextCluster = 0;
+                int teste = 0;
+                while(fread(&nextCluster, sizeof(nextCluster), 1, fp) == 1 && nextCluster != 0xFFFF && nextCluster != 0){
+                    clustersFat.push_back(nextCluster);
+                    fseek(fp, (fat_start + (nextCluster)*2), SEEK_SET);
+                    printf("proximo cluster %d\n", nextCluster);
+                    teste++;
+                }
+                printf("------------------- Archive Content --------------------\n");
+                for(int j = 0; j < clustersFat.size(); j++ ){
+                    fseek(fp, ((clustersFat[j]-2)+dataStart) * boot_record.bytes_per_sector, SEEK_SET);
+                    int readingSize = boot_record.sectors_per_cluster*boot_record.bytes_per_sector;
+                    unsigned char data[readingSize];
+                    fread(&data, sizeof(data), 1, fp);
+                    printf("%s", data);
+                }
+
+            }
             printf("\n");
         }
 
-        if (root_directory.file_attributes == 0x20 && root_directory.low_16_bits_fc > 0x00)
-        {
-            
-        }
         count += 32;
         fseek(fp, root_start_bytes + count, SEEK_SET);
         fread(&root_directory, sizeof(fat_RD), 1, fp);
