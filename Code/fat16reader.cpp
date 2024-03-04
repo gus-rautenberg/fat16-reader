@@ -75,12 +75,7 @@ int main()
     printf("Root Start Byters %d \n", root_start_bytes);
     printf("\n");
 
-    // fseek(fp, 159424, SEEK_SET);
-    // fread(&root_directory, sizeof(fat_RD), 1, fp);
-    // printf("Name %s \n", root_directory.file_name);
-    // printf("atributes: %02X \n", root_directory.file_attributes);
-    // printf("First Cluster: %04X \n", root_directory.low_16_bits_fc);
-    // printf("Size %u\n", root_directory.file_size);
+
     fseek(fp, root_start_bytes, SEEK_SET);
     fread(&root_directory, sizeof(fat_RD), 1, fp);
     int root_dir_sector = ((boot_record.root_entry_count*32) + (boot_record.bytes_per_sector-1)) / boot_record.bytes_per_sector;
@@ -114,7 +109,7 @@ int main()
                     printf("proximo cluster %d\n", nextCluster);
                     teste++;
                 }
-                printf("------------------- Archive Content --------------------\n");
+                printf("------------------- File Content --------------------\n");
                 for(int j = 0; j < clustersFat.size(); j++ ){
                     fseek(fp, ((clustersFat[j]-2)+dataStart) * boot_record.bytes_per_sector, SEEK_SET);
                     int readingSize = boot_record.sectors_per_cluster*boot_record.bytes_per_sector;
