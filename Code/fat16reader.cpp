@@ -51,7 +51,9 @@ int main()
     FILE *fp;
     fat_BR boot_record;
 
-    fp = fopen("../Data/fat16_4sectorpercluster.img", "rb");
+    fp = fopen("../Data/fat16_1sectorpercluster.img", "rb");
+    // fp = fopen("../Data/fat16_4sectorpercluster.img", "rb");
+    // fp = fopen("../Data/floppyext2.img", "rb");
     fseek(fp, 0, SEEK_SET);
     fread(&boot_record, sizeof(fat_BR), 1, fp);
 
