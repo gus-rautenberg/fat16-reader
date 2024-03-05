@@ -51,7 +51,7 @@ int main()
     FILE *fp;
     fat_BR boot_record;
 
-    fp = fopen("../Data/fat16_1sectorpercluster.img", "rb");
+    fp = fopen("../Data/fat16_4sectorpercluster.img", "rb");
     fseek(fp, 0, SEEK_SET);
     fread(&boot_record, sizeof(fat_BR), 1, fp);
 
@@ -113,7 +113,7 @@ int main()
                 
                 printf("------------------- File Content --------------------\n");
                 for(int j = 0; j < clustersFat.size(); j++ ){
-                    fseek(fp, ((clustersFat[j]-2)+dataStart) * boot_record.bytes_per_sector, SEEK_SET);
+                    fseek(fp, (((clustersFat[j]-2)*boot_record.sectors_per_cluster)+dataStart) * boot_record.bytes_per_sector, SEEK_SET);
                     int readingSize = boot_record.sectors_per_cluster*boot_record.bytes_per_sector;
                     unsigned char data[readingSize];
                     fread(&data, sizeof(data), 1, fp);
