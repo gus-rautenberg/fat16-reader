@@ -51,9 +51,11 @@ int main()
     FILE *fp;
     fat_BR boot_record;
 
-    fp = fopen("../Data/fat16_1sectorpercluster.img", "rb");
+    // fp = fopen("../Data/fat16_1sectorpercluster.img", "rb");
     // fp = fopen("../Data/fat16_4sectorpercluster.img", "rb");
     // fp = fopen("../Data/floppyext2.img", "rb");
+    fp = fopen("../Data/test.img", "rb");
+
     fseek(fp, 0, SEEK_SET);
     fread(&boot_record, sizeof(fat_BR), 1, fp);
 
@@ -82,6 +84,7 @@ int main()
     fread(&root_directory, sizeof(fat_RD), 1, fp);
     int root_dir_sector = ((boot_record.root_entry_count*32) + (boot_record.bytes_per_sector-1)) / boot_record.bytes_per_sector;
     int dataStart = (root_begin + root_dir_sector);
+    printf("Data Start %d \n", dataStart);
 
 
     int count = 0;
@@ -112,16 +115,23 @@ int main()
                     printf("proximo cluster %d\n", nextCluster);
                     
                 }
-                
                 printf("------------------- File Content --------------------\n");
+                int clusterSize = boot_record.sectors_per_cluster*boot_record.bytes_per_sector;
+                int fileSize = root_directory.file_size;
                 for(int j = 0; j < clustersFat.size(); j++ ){
                     fseek(fp, (((clustersFat[j]-2)*boot_record.sectors_per_cluster)+dataStart) * boot_record.bytes_per_sector, SEEK_SET);
-                    int readingSize = boot_record.sectors_per_cluster*boot_record.bytes_per_sector;
-                    unsigned char data[readingSize];
-                    fread(&data, sizeof(data), 1, fp);
-                    printf("%s", data);
+                    if(clusterSize > fileSize){
+                        unsigned char data[fileSize];
+                        fread(&data, sizeof(data), 1, fp);
+                        printf("%s", data);
+                    } else {
+                        unsigned char data[clusterSize];
+                        fread(&data, sizeof(data), 1, fp);
+                        printf("%s", data);
+                        fileSize -= clusterSize;
+                    }
+                    
                 }
-
             }
             printf("\n");
         }
