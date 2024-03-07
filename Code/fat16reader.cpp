@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
+#include <unordered_map>
 
 // g++ -O2 fat16reader.cpp -o main
 #pragma pack(push, 1)
@@ -29,7 +30,8 @@ typedef struct fat_BS
 
 typedef struct fat_RD
 {
-    unsigned char file_name[11];
+    unsigned char file_name[8];
+    unsigned char file_extension[3];
     unsigned char file_attributes;
     unsigned char windowsNT;
     unsigned char creation_time;
@@ -51,10 +53,10 @@ int main()
     FILE *fp;
     fat_BR boot_record;
 
-    // fp = fopen("../Data/fat16_1sectorpercluster.img", "rb");
+    fp = fopen("../Data/fat16_1sectorpercluster.img", "rb");
     // fp = fopen("../Data/fat16_4sectorpercluster.img", "rb");
     // fp = fopen("../Data/floppyext2.img", "rb");
-    fp = fopen("../Data/test.img", "rb");
+    // fp = fopen("../Data/test.img", "rb");
 
     fseek(fp, 0, SEEK_SET);
     fread(&boot_record, sizeof(fat_BR), 1, fp);
@@ -92,6 +94,7 @@ int main()
         {
             printf("------------------- Archive --------------------\n");
             printf("Name %s \n", root_directory.file_name);
+            printf("Extensão %s \n", root_directory.file_extension);
             printf("atributes: %02X ", root_directory.file_attributes);
             root_directory.file_attributes == 0x20 ? printf("<-- FILE\n") : printf("<-- DIRECTORY\n");
             printf("First Cluster: %04X \n", root_directory.low_16_bits_fc);
@@ -122,13 +125,20 @@ int main()
                     {
                         unsigned char data[fileSize];
                         fread(&data, sizeof(data), 1, fp);
-                        printf("%s", data);
+                        for (int k = 0; k < fileSize; k++)
+                        {
+                            printf("%c", data[k]);
+                        }
                     }
                     else
                     {
                         unsigned char data[clusterSize];
-                        fread(&data, sizeof(data), 1, fp);
-                        printf("%s", data);
+                        fread(&data, clusterSize, 1, fp);
+
+                        for (int k = 0; k < clusterSize; k++)
+                        {
+                            printf("%c", data[k]);
+                        }
                         fileSize -= clusterSize;
                     }
                 }
