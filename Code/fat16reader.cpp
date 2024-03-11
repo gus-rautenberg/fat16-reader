@@ -53,7 +53,7 @@ int main()
     FILE *fp;
     fat_BR boot_record;
 
-    fp = fopen("../Data/fat16_1sectorpercluster.img", "rb");
+    // fp = fopen("../Data/fat16_1sectorpercluster.img", "rb");
     // fp = fopen("../Data/fat16_4sectorpercluster.img", "rb");
     // fp = fopen("../Data/floppyext2.img", "rb");
     // fp = fopen("../Data/test.img", "rb");
@@ -113,7 +113,7 @@ int main()
                 {
                     clustersFat.push_back(nextCluster);
                     fseek(fp, (fat_start + (nextCluster) * 2), SEEK_SET);
-                    printf("proximo cluster %d\n", nextCluster);
+                    // printf("proximo cluster %d\n", nextCluster);
                 }
                 printf("------------------- File Content --------------------\n");
                 int clusterSize = boot_record.sectors_per_cluster * boot_record.bytes_per_sector;
